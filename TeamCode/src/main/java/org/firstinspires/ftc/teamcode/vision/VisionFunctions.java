@@ -2,22 +2,18 @@ package org.firstinspires.ftc.teamcode.vision;
 
 import static android.os.SystemClock.sleep;
 
-// Import Main Variables
-import static org.firstinspires.ftc.teamcode.MainVariableConfigurations.EXPOSURE_MS;
-import static org.firstinspires.ftc.teamcode.MainVariableConfigurations.GAIN;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.vision.VisionPortal;
-
 import java.util.concurrent.TimeUnit;
+
+// Import the configuration class layout explicitly
+import org.firstinspires.ftc.teamcode.MainVariableConfigurations;
 
 public class VisionFunctions {
 
-    // Track the last applied values to avoid overwhelming the camera USB bus
     private final ElapsedTime controlThrottleTimer = new ElapsedTime();
     private int lastAppliedExposure = -1;
     private int lastAppliedGain = -1;
@@ -25,7 +21,6 @@ public class VisionFunctions {
     public void updateCameraControls(VisionPortal portal) {
         if (portal.getCameraState() != VisionPortal.CameraState.STREAMING) return;
 
-        // Throttle checks to 500ms so we don't violently loop stream restarts
         if (controlThrottleTimer.milliseconds() < 500) return;
         controlThrottleTimer.reset();
 
@@ -33,7 +28,6 @@ public class VisionFunctions {
         GainControl gainControl = portal.getCameraControl(GainControl.class);
 
         if (exposureControl != null && gainControl != null) {
-            // Enforce Manual Mode if it slipped back into Auto
             if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
                 try {
                     exposureControl.setAePriority(false);
@@ -41,33 +35,31 @@ public class VisionFunctions {
                 exposureControl.setMode(ExposureControl.Mode.Manual);
             }
 
-            // Check if the dashboard values actually changed
-            if (EXPOSURE_MS != lastAppliedExposure || GAIN != lastAppliedGain) {
+            // EXPLICIT REFERENCE: Forces live lookup of dashboard changes
+            int targetExposure = MainVariableConfigurations.EXPOSURE_MS;
+            int targetGain = MainVariableConfigurations.GAIN;
 
-                // Get boundaries to prevent camera driver crashes
+            if (targetExposure != lastAppliedExposure || targetGain != lastAppliedGain) {
+
                 long minExp = exposureControl.getMinExposure(TimeUnit.MILLISECONDS);
                 long maxExp = exposureControl.getMaxExposure(TimeUnit.MILLISECONDS);
                 int minGain = gainControl.getMinGain();
                 int maxGain = gainControl.getMaxGain();
 
-                long clampedExp = Math.max(minExp, Math.min(maxExp, EXPOSURE_MS));
-                int clampedGain = Math.max(minGain, Math.min(maxGain, GAIN));
+                long clampedExp = Math.max(minExp, Math.min(maxExp, targetExposure));
+                int clampedGain = Math.max(minGain, Math.min(maxGain, targetGain));
 
-                // CRITICAL STEP: Temporarily break dashboard lock to free the firmware registers
                 FtcDashboard.getInstance().stopCameraStream();
-                sleep(30); // Give the UVC driver a brief moment to unpack the stream pipeline
+                sleep(30);
 
-                // Push your verified values directly to the lens hardware
                 boolean expSuccess = exposureControl.setExposure(clampedExp, TimeUnit.MILLISECONDS);
                 boolean gainSuccess = gainControl.setGain(clampedGain);
                 sleep(30);
 
-                // Re-hook the stream so you can see your live changes instantly on your browser screen
                 FtcDashboard.getInstance().startCameraStream(portal, 0);
 
-                // Only cache if the camera successfully accepted the setting change
-                if (expSuccess) lastAppliedExposure = EXPOSURE_MS;
-                if (gainSuccess) lastAppliedGain = GAIN;
+                if (expSuccess) lastAppliedExposure = targetExposure;
+                if (gainSuccess) lastAppliedGain = targetGain;
             }
         }
     }

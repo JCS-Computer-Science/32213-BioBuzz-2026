@@ -3,13 +3,19 @@ package org.firstinspires.ftc.teamcode.vision;
 // Import Main Variables
 import static org.firstinspires.ftc.teamcode.MainVariableConfigurations.DECIMATION;
 
+import org.firstinspires.ftc.teamcode.MainVariableConfigurations;
+// Import Main Functions
+
 import android.annotation.SuppressLint;
 import android.util.Size;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.sun.tools.javac.Main;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -19,7 +25,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagSingleDetection;
 
 import java.util.List;
 
-@Config // 1. Expose this entire class to FTC Dashboard configuration panel
 @TeleOp(name = "Camera AprilTag Stream Test", group = "Test")
 public class CameraStreamTest extends LinearOpMode {
 
@@ -34,60 +39,38 @@ public class CameraStreamTest extends LinearOpMode {
                 .build();
 
         VisionPortal visionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "MainCam"))
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .setCameraResolution(new Size(640, 480))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .addProcessor(aprilTagProcessor)
-                .enableLiveView(false)
+//                .enableLiveView(false)
                 .setAutoStopLiveView(false)
                 .build();
 
         VisionFunctions visionFunctions = new VisionFunctions();
 
         FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         // Modify Init Variables
         aprilTagProcessor.setDecimation(DECIMATION);
         dashboard.setImageQuality(100);
-        dashboard.startCameraStream(visionPortal, 0);
+        if (MainVariableConfigurations.VIEW_CAMERA_IN_DASHBOARD) dashboard.startCameraStream(visionPortal, 0);
 
-        telemetry.addData("Status", "AprilTag Scanner Ready.");
-        telemetry.update();
-
-        // Wait for streaming to begin during INIT stage to push initial config
+        // Wait for streaming to begin during Init stage to push initial config
         while (!isStopRequested() && visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
             sleep(20);
         }
 
-        if (!isStopRequested()) {
-            visionFunctions.updateCameraControls(visionPortal);
-        }
-
-        long lastTime = System.currentTimeMillis();
-        int frameCount = 0;
-        double calculatedFps = 0;
-
         waitForStart();
 
         while (opModeIsActive()) {
-            // Keep monitoring the dashboard variables for real-time updates
-            visionFunctions.updateCameraControls(visionPortal);
 
             List<AprilTagDetection> currentDetections = aprilTagProcessor.getDetections();
+            
+            telemetry.addData("Vision Portal FPS", visionPortal.getFps());
 
-            frameCount++;
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastTime >= 1000) {
-                calculatedFps = frameCount / ((currentTime - lastTime) / 1000.0);
-                frameCount = 0;
-                lastTime = currentTime;
-            }
-
-            telemetry.addLine("=== PERFORMANCE BENCHMARK ===");
-            telemetry.addData("True Processing Loop FPS", String.format("%.2f", calculatedFps));
-            telemetry.addLine("=============================\n");
-
-            telemetry.addData("# Tags Detected", currentDetections.size());
+            telemetry.addData("Number of Tags Detected", currentDetections.size());
 
             for (AprilTagDetection detection : currentDetections) {
                 if (detection instanceof AprilTagSingleDetection) {
@@ -100,6 +83,7 @@ public class CameraStreamTest extends LinearOpMode {
                 }
             }
 
+            telemetry.addData("Test Int", MainVariableConfigurations.TEST_INT);
             telemetry.update();
             sleep(5);
         }

@@ -1,3 +1,5 @@
-& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward --remove-all
-& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:8080 tcp:8080
-& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:8000 tcp:8000
+& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward --remove-all # Clear any existing ports
+& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:8000 tcp:8000 # Forward the WebUi for FTC Dashboard
+& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:8080 tcp:8080 # Forward the data for FTC Dashboard
+& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:10158 tcp:10158 # Forward the WebUi for Pedro Autotune
+& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:12649 tcp:12649 # Forward the data for Pedro Autotune, found through the list of ports
