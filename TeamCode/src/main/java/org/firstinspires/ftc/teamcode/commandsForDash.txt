@@ -1,3 +1,7 @@
+#Over Wifi Connection
+& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" disconnect
+& "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" connect 192.168.43.1:5555
+
 & "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward --remove-all # Clear any existing ports
 & "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:8000 tcp:8000 # Forward the WebUi for FTC Dashboard
 & "$env:USERPROFILE\AppData\Local\Android\Sdk\platform-tools\adb.exe" forward tcp:8080 tcp:8080 # Forward the data for FTC Dashboard
