@@ -19,7 +19,6 @@ public class servoTest extends OpMode {
     public void loop() {
 //        bench.setMotorSpeed(0.5);
 
-        // Runs the continuous servo at full speed
-        servo.setPower(1.0);
+        servo.setPower(-1.0);
     }
 }
