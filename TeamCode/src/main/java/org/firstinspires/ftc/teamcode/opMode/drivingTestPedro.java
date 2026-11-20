@@ -119,24 +119,24 @@ public class drivingTestPedro extends LinearOpMode {
 
             // Look for an AprilTag
             boolean seesTag = false;
-            double tagAngle = 0; // degrees, positive = tag is to the right
+            double tagAngle = 0;
             String tagName = "none";
             if (visionPortal != null) {
                 visionFunctions.updateCameraControls(visionPortal);
                 for (AprilTagDetection detection : aprilTagProcessor.getDetections()) {
-                    if (detection.ftcPose == null) continue; // skip tags it can't measure
+                    if (detection.ftcPose == null) continue;
                     seesTag = true;
-                    tagAngle = -detection.ftcPose.bearing; // bearing is positive to the left, so flip it
+                    tagAngle = -detection.ftcPose.bearing;
                     if (detection instanceof AprilTagSingleDetection) {
                         tagName = "tag " + ((AprilTagSingleDetection) detection).id;
                     } else {
                         tagName = "cluster";
                     }
-                    break; // just use the first tag we see
+                    break;
                 }
             }
 
-            // Rotate lazy susan, d-pad always wins over auto aim
+            // Rotate lazy susan, dpad always wins over auto aim
             double lazySusanPower = 0.0;
             if (gamepad1.dpad_left) {
                 lazySusanPower = 1.0;
