@@ -49,14 +49,19 @@ public class VisionFunctions {
                 long clampedExp = Math.max(minExp, Math.min(maxExp, targetExposure));
                 int clampedGain = Math.max(minGain, Math.min(maxGain, targetGain));
 
-                FtcDashboard.getInstance().stopCameraStream();
-                sleep(30);
+                boolean streamToDashboard = MainVariableConfigurations.VIEW_CAMERA_IN_DASHBOARD;
+                if (streamToDashboard) {
+                    FtcDashboard.getInstance().stopCameraStream();
+                    sleep(30);
+                }
 
                 boolean expSuccess = exposureControl.setExposure(clampedExp, TimeUnit.MILLISECONDS);
                 boolean gainSuccess = gainControl.setGain(clampedGain);
                 sleep(30);
 
-                FtcDashboard.getInstance().startCameraStream(portal, 0);
+                if (streamToDashboard) {
+                    FtcDashboard.getInstance().startCameraStream(portal, 0);
+                }
 
                 if (expSuccess) lastAppliedExposure = targetExposure;
                 if (gainSuccess) lastAppliedGain = targetGain;
